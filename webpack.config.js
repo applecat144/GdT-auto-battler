@@ -10,7 +10,9 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
+            hash: true,
             title: 'Untitled for now',
+            template: './src/index.html',
         }),
     ],
     module: {
