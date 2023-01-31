@@ -1,12 +1,12 @@
 import './style.css'
 
-const unitFac = function (owner, name, type, ID, me, di, de, mv, mo, en, co, chargeBonus, meVsCav, meVsInf, meVsMis,
+const unitFac = function (owner, name, type, inID, me, di, de, mv, mo, en, co, chargeBonus, meVsCav, meVsInf, meVsMis,
     diVsCav, diVsInf, diVsMis, deVsCav, deVsInf, deVsMis) {
     return {
         owner,
         name,
         type,
-        ID,
+        inID,
         me,
         di,
         de,
@@ -30,6 +30,8 @@ const unitFac = function (owner, name, type, ID, me, di, de, mv, mo, en, co, cha
             deVsInf,
             deVsMis
         },
+        meTarget: null,
+        diTarget: null,
         isMoving: 0,
         isMelee: 0,
         isFleeing: 0,
@@ -51,9 +53,9 @@ const unitFac = function (owner, name, type, ID, me, di, de, mv, mo, en, co, cha
     }
 }
 
-const armyAmodule = function () {
+const armyAmodule = (function () {
 
-    let ID = 0;
+    let IDnum = 0;
 
     let armyA = {
         art: [],
@@ -62,102 +64,114 @@ const armyAmodule = function () {
         inf: []
     }
 
-    const getArmy = function() {
+    const getArmy = function () {
         return armyA;
+    }
+
+    const resetArmyA = function () {
+        ID = 0;
+
+        armyA.art = [];
+        armyA.mis = [];
+        armyA.cav = [];
+        armyA.inf = [];
     }
 
     const addUnit = function (owner, name, type, me, di, de, mv, mo, en, co, chargeBonus, meVsCav, meVsInf, meVsMis,
         diVsCav, diVsInf, diVsMis, deVsCav, deVsInf, deVsMis) {
 
-        let inID = type+`-`+ID;
+        let inID = type + `-` + IDnum;
 
-        ID++;
+        IDnum++;
 
         let newUnit = unitFac(owner, name, type, inID, me, di, de, mv, mo, en, co, chargeBonus, meVsCav, meVsInf, meVsMis,
             diVsCav, diVsInf, diVsMis, deVsCav, deVsInf, deVsMis);
 
-        switch (newUnit.type) {
-            case `art`:
-                armyA.art.push(newUnit);
-                break;
+        if (armyA[newUnit.type]) {
 
-            case `mis`:
-                armyA.mis.push(newUnit);
-                break;
+            armyA[newUnit.type].push(newUnit)
 
-            case `cav`:
-                armyA.cav.push(newUnit);
-                break;
+            return 1;
 
-            case `inf`:
-                armyA.inf.push(newUnit);
-                break;
+        } else {
+            let error = `ERR addUnit : unit type doesn't exist`;
+            console.log(error);
+            alert(error);
 
-            default:
-                console.log(`ERR addUnit : invalid type`)
-                return -1;
+            return -1;
+        }
+    };
+
+    const getUnitIndexById = function (ID) {
+
+        // this function takes an ID and returns an object containing the array and the index in that array of the
+        // inputed ID.
+
+        let type = ID.split("-")[0];
+
+        if (armyA[type]) {
+            for (let i = 0; i < armyA[type].length; i++) {
+                if (armyA[type][i].inID === ID) {
+                    return { type: type, index: i };
+                } else {
+                    let error = `ERR getUnitIndexById : unit '${ID}' doesn't exist`;
+                    console.log(error);
+                    alert(error);
+                }
+            }
+        } else {
+            let error = `ERR getUnitIndexById : ${ID} unit type doesn't exist`;
+            console.log(error);
+            alert(error);
         }
     }
 
-    const getUnitIndexById = function(ID) {
-        let type = ID.split("-")[0];
+    const woundUnit = function (ID) {
 
-        switch (type) {
-            case `art`:
-                for(let i = 0; i < armyA.art.length; i++) {
-                    if(armyA.art[i] === ID) {
-                        return i;
-                    } else if (i === (armyA.art.length -1)) {
-                        console.log(`ERR getUnitIndexByID : ID ${ID} doesn't exist`);
-                        return -1
-                    }
-                }
-                break;
+        let access = getUnitIndexById(ID);
 
-            case `mis`:
-                for(let i = 0; i < armyA.mis.length; i++) {
-                    if(armyA.mis[i] === ID) {
-                        return i;
-                    } else if (i === (armyA.mis.length -1)) {
-                        console.log(`ERR getUnitIndexByID : ID ${ID} doesn't exist`);
-                        return -1
-                    }
-                }
-                break;
+        armyA[access.type][access.index].wound();
 
-            case `cav`:
-                for(let i = 0; i < armyA.cav.length; i++) {
-                    if(armyA.cav[i] === ID) {
-                        return i;
-                    } else if (i === (armyA.cav.length -1)) {
-                        console.log(`ERR getUnitIndexByID : ID ${ID} doesn't exist`);
-                        return -1
-                    }
-                }
-                break;
-
-            case `inf`:
-                for(let i = 0; i < armyA.inf.length; i++) {
-                    if(armyA.inf[i] === ID) {
-                        return i;
-                    } else if (i === (armyA.inf.length -1)) {
-                        console.log(`ERR getUnitIndexByID : ID ${ID} doesn't exist`);
-                        return -1
-                    }
-                }
-                break;
-
-            default:
-                console.log(`ERR getUnitIndexByID : ID type is invalid`)
-                return -1;
+        if (armyA[access.type][access.index].en <= 0) {
+            console.log(`${ID} got killed`);
+            killUnit(ID);
         }
 
+    }
+
+    const killUnit = function (ID) {
+
+        let access = getUnitIndexById(ID);
+
+        if (armyA[access.type][access.index].en > 0) {
+            let error = `ERR killUnit : unit isn't dead`
+            console.log(error);
+            alert(error);
+        } else {
+            armyA[access.type].splice(access.index, 1);
+        }
     }
 
     return {
         getArmy,
+        resetArmyA,
         addUnit,
         getUnitIndexById,
+        woundUnit,
+        killUnit,
     }
-}
+})();
 
+armyAmodule.addUnit("Gaetan", "Conscrits", "inf", 2, 0, 10, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+armyAmodule.addUnit("Gaetan", "Cavalerie lourde", "cav", 4, -2, 16, 3, 2, 2, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+armyAmodule.addUnit("Gaetan", "Archers d'élite", "mis", 1, 6, 14, 2, 6, 3, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0);
+
+console.log(armyAmodule.getArmy());
+
+document.getElementById('wound').addEventListener('click', () => {
+    armyAmodule.woundUnit("cav-1");
+    armyAmodule.woundUnit("inf-0");
+    armyAmodule.woundUnit("mis-2");
+
+    console.log(armyAmodule.getArmy());
+})
