@@ -58,11 +58,12 @@ const unitFac = function (owner, name, type, inID, me, di, de, mv, mo, en, co, c
     }
 }
 
-const armyAmodule = (function () {
+const armyModule = function (letter) {
 
     let IDnum = 0;
 
-    let armyA = {
+    let army = {
+        armyID: `army`+letter,
         art: [],
         mis: [],
         cav: [],
@@ -70,31 +71,31 @@ const armyAmodule = (function () {
     }
 
     const getArmy = function () {
-        return armyA;
+        return army;
     }
 
-    const resetArmyA = function () {
+    const resetArmy = function () {
         ID = 0;
 
-        armyA.art = [];
-        armyA.mis = [];
-        armyA.cav = [];
-        armyA.inf = [];
+        army.art = [];
+        army.mis = [];
+        army.cav = [];
+        army.inf = [];
     }
 
     const addUnit = function (owner, name, type, me, di, de, mv, mo, en, co, chargeBonus, meVsCav, meVsInf, meVsMis,
         diVsCav, diVsInf, diVsMis, deVsCav, deVsInf, deVsMis) {
 
-        let inID = `A.` + type + `-` + IDnum;
+        let inID = letter + `.` + type + `-` + IDnum;
 
         IDnum++;
 
         let newUnit = unitFac(owner, name, type, inID, me, di, de, mv, mo, en, co, chargeBonus, meVsCav, meVsInf, meVsMis,
             diVsCav, diVsInf, diVsMis, deVsCav, deVsInf, deVsMis);
 
-        if (armyA[newUnit.type]) {
+        if (army[newUnit.type]) {
 
-            armyA[newUnit.type].push(newUnit)
+            army[newUnit.type].push(newUnit)
 
             return 1;
 
@@ -114,11 +115,11 @@ const armyAmodule = (function () {
 
         let type = ID.split("-") [0].split(".")[1];
 
-        if (armyA[type].length > 0) {
-            for (let i = 0; i < armyA[type].length; i++) {
-                if (armyA[type][i].inID === ID) {
+        if (army[type].length > 0) {
+            for (let i = 0; i < army[type].length; i++) {
+                if (army[type][i].inID === ID) {
                     return { type: type, index: i };
-                } else if (i === (armyA[type].length - 1)){
+                } else if (i === (army[type].length - 1)){
                     let error = `ERR getUnitIndexById : unit '${ID}' not found`;
                     console.log(error);
                     alert(error);
@@ -126,7 +127,7 @@ const armyAmodule = (function () {
                     return -1;
                 }
             }
-        } else if (armyA[type]){
+        } else if (army[type]){
             let error = `ERR getUnitIndexById : unit ${ID} not found`;
             console.log(error);
             alert(error);
@@ -152,9 +153,9 @@ const armyAmodule = (function () {
             return -1;
         }
 
-        armyA[access.type][access.index].wound();
+        army[access.type][access.index].wound();
 
-        if (armyA[access.type][access.index].en <= 0) {
+        if (army[access.type][access.index].en <= 0) {
             console.log(`woundUnit : ${ID} got killed`);
             killUnit(ID);
         }
@@ -172,12 +173,12 @@ const armyAmodule = (function () {
             return -1;
         }
 
-        if (armyA[access.type][access.index].en > 0) {
+        if (army[access.type][access.index].en > 0) {
             let error = `ERR killUnit : unit isn't dead`
             console.log(error);
             alert(error);
         } else {
-            armyA[access.type].splice(access.index, 1);
+            army[access.type].splice(access.index, 1);
         }
     }
 
@@ -192,8 +193,8 @@ const armyAmodule = (function () {
             return -1;
         }
 
-        if (armyA[access.type][access.index].isFleeing === 0) {
-            armyA[access.type][access.index].flee();
+        if (army[access.type][access.index].isFleeing === 0) {
+            army[access.type][access.index].flee();
         } else {
             console.log(`route : ${ID} is already routed`);
         }
@@ -210,8 +211,8 @@ const armyAmodule = (function () {
             return -1;
         }
 
-        if (armyA[access.type][access.index].isFleeing === 1) {
-            armyA[access.type][access.index].stopFlee();
+        if (army[access.type][access.index].isFleeing === 1) {
+            army[access.type][access.index].stopFlee();
         } else {
             console.log(`unroute : ${ID} is not routed`);
         }
@@ -227,7 +228,7 @@ const armyAmodule = (function () {
             return -1;
         };
 
-        armyA[access.type][access.index].engage(targetID);
+        army[access.type][access.index].engage(targetID);
     }
 
     const disengageUnit = function (ID) {
@@ -240,12 +241,12 @@ const armyAmodule = (function () {
             return -1;
         };
 
-        armyA[access.type][access.index].disengage();
+        army[access.type][access.index].disengage();
     }
 
     return {
         getArmy,
-        resetArmyA,
+        resetArmy,
         addUnit,
         getUnitIndexById,
         woundUnit,
@@ -255,18 +256,20 @@ const armyAmodule = (function () {
         engageUnit,
         disengageUnit,
     }
-})();
+};
 
-armyAmodule.addUnit("Gaetan", "Conscrits", "inf", 2, 0, 10, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-armyAmodule.addUnit("Gaetan", "Cavalerie lourde", "cav", 4, -2, 16, 3, 2, 2, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-armyAmodule.addUnit("Gaetan", "Archers d'élite", "mis", 1, 6, 14, 2, 6, 3, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0);
+let armyA = (armyModule)(`A`);
+let armyB = (armyModule)(`B`);
 
-console.log(armyAmodule.getArmy());
+armyA.addUnit('Gaetan', 'Conscrits', 'inf', 2, null, 10, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+armyA.addUnit('Gaetan', 'Lanciers', 'inf', 4, null, 14, 1, 4, 2, 3, 0, 2, 0, 0, 0, 0, 0, 0, -2, 0);
+armyA.addUnit('Gaetan', 'Cavalerie lourde', 'cav', 4, -2, 16, 3, 2, 2, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+armyA.addUnit('Gaetan', 'Archers d\'élite', 'mis', 1, 6, 14, 2, 6, 3, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0);
 
-document.getElementById('wound').addEventListener('click', () => {
-    armyAmodule.woundUnit("A.cav-1");
-    armyAmodule.woundUnit("A.inf-0");
-    armyAmodule.woundUnit("A.mis-2");
+armyB.addUnit('Gérard', 'Conscrits', 'inf', 2, null, 10, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+armyB.addUnit('Gérard', 'Lanciers', 'inf', 4, null, 14, 1, 4, 2, 3, 0, 2, 0, 0, 0, 0, 0, 0, -2, 0);
+armyB.addUnit('Gérard', 'Cavalerie lourde', 'cav', 4, -2, 16, 3, 2, 2, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+armyB.addUnit('Gérard', 'Archers d\'élite', 'mis', 1, 6, 14, 2, 6, 3, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0);
 
-    console.log(armyAmodule.getArmy());
-})
+console.log(armyA.getArmy());
+console.log(armyB.getArmy());

@@ -1,16 +1,9 @@
-create : 
-    - unitFac : isEngaged property, engage and disengage methods;
-    - armyAmodule.route;
-    - armyAmodule.unroute;
-    - armyAmodule.engageUnit;
-    - armyAmodule.disengageUnit;
-
-addUnit :
-    - add army identifier in front of new units ID to prevent future
-    potential conflicts;
-
-getUnitIndexById : 
-    - modify to aknowledge new units IDs;
-    - added condition to return -1 when ID type is empty;
-    - fix a bug where the function would return immediately after
-    not finding the good unit for one time;
+armyAmodule : 
+    - renamed armyModule ;
+    - swapped any reference to "armyA" to generic "army";
+    - Now takes a letter as parameter to help for identification of unit appartenance
+    (see addUnit's ID part);
+    - refactor armyModule to make it generic, and copied into any variable to 
+    easily create and store any number of army;
+    - create two identical armies that will be used as testing grounds to build
+    the battle module;
