@@ -32,8 +32,7 @@ const unitFac = function (owner, name, type, inID, me, di, de, mv, mo, en, co, c
         },
         meTarget: null,
         diTarget: null,
-        isMoving: 0,
-        isMelee: 0,
+        isEngaged: null,
         isFleeing: 0,
         wound: function () {
             if (this.en > 0) {
@@ -49,6 +48,12 @@ const unitFac = function (owner, name, type, inID, me, di, de, mv, mo, en, co, c
             if (this.isFleeing === 1) {
                 this.isFleeing = 0;
             }
+        },
+        engage: function (targetID) {
+            this.isEngaged = targetID;
+        },
+        disengage: function () {
+            this.isEngaged = null;
         }
     }
 }
@@ -80,7 +85,7 @@ const armyAmodule = (function () {
     const addUnit = function (owner, name, type, me, di, de, mv, mo, en, co, chargeBonus, meVsCav, meVsInf, meVsMis,
         diVsCav, diVsInf, diVsMis, deVsCav, deVsInf, deVsMis) {
 
-        let inID = type + `-` + IDnum;
+        let inID = `A.` + type + `-` + IDnum;
 
         IDnum++;
 
@@ -107,22 +112,32 @@ const armyAmodule = (function () {
         // this function takes an ID and returns an object containing the array and the index in that array of the
         // inputed ID.
 
-        let type = ID.split("-")[0];
+        let type = ID.split("-") [0].split(".")[1];
 
-        if (armyA[type]) {
+        if (armyA[type].length > 0) {
             for (let i = 0; i < armyA[type].length; i++) {
                 if (armyA[type][i].inID === ID) {
                     return { type: type, index: i };
-                } else {
-                    let error = `ERR getUnitIndexById : unit '${ID}' doesn't exist`;
+                } else if (i === (armyA[type].length - 1)){
+                    let error = `ERR getUnitIndexById : unit '${ID}' not found`;
                     console.log(error);
                     alert(error);
+
+                    return -1;
                 }
             }
+        } else if (armyA[type]){
+            let error = `ERR getUnitIndexById : unit ${ID} not found`;
+            console.log(error);
+            alert(error);
+
+            return -1;
         } else {
             let error = `ERR getUnitIndexById : ${ID} unit type doesn't exist`;
             console.log(error);
             alert(error);
+
+            return -1;
         }
     }
 
@@ -130,10 +145,17 @@ const armyAmodule = (function () {
 
         let access = getUnitIndexById(ID);
 
+        if (access === -1) {
+            let error = `ERR woundUnit : ${ID} not found`;
+            console.log(error);
+            alert(error);
+            return -1;
+        }
+
         armyA[access.type][access.index].wound();
 
         if (armyA[access.type][access.index].en <= 0) {
-            console.log(`${ID} got killed`);
+            console.log(`woundUnit : ${ID} got killed`);
             killUnit(ID);
         }
 
@@ -142,6 +164,13 @@ const armyAmodule = (function () {
     const killUnit = function (ID) {
 
         let access = getUnitIndexById(ID);
+
+        if (access === -1) {
+            let error = `ERR killUnit : ${ID} not found`;
+            console.log(error);
+            alert(error);
+            return -1;
+        }
 
         if (armyA[access.type][access.index].en > 0) {
             let error = `ERR killUnit : unit isn't dead`
@@ -152,6 +181,68 @@ const armyAmodule = (function () {
         }
     }
 
+    const route = function(ID) {
+
+        let access = getUnitIndexByID(ID);
+
+        if (access === -1) {
+            let error = `ERR route : ${ID} not found`;
+            console.log(error);
+            alert(error);
+            return -1;
+        }
+
+        if (armyA[access.type][access.index].isFleeing === 0) {
+            armyA[access.type][access.index].flee();
+        } else {
+            console.log(`route : ${ID} is already routed`);
+        }
+    }
+
+    const unroute = function (ID) {
+
+        let access = getUnitIndexByID(ID);
+
+        if (access === -1) {
+            let error = `ERR unroute : ${ID} not found`;
+            console.log(error);
+            alert(error);
+            return -1;
+        }
+
+        if (armyA[access.type][access.index].isFleeing === 1) {
+            armyA[access.type][access.index].stopFlee();
+        } else {
+            console.log(`unroute : ${ID} is not routed`);
+        }
+    }
+
+    const engageUnit = function (ID, targetID) {
+        let access = getUnitIndexById(ID);
+
+        if (access === -1) {
+            let error = `ERR engageUnit : ${ID} not found`;
+            console.log(error);
+            alert(error);
+            return -1;
+        };
+
+        armyA[access.type][access.index].engage(targetID);
+    }
+
+    const disengageUnit = function (ID) {
+        let access = getUnitIndexById(ID);
+
+        if (access === -1) {
+            let error = `ERR engageUnit : ${ID} not found`;
+            console.log(error);
+            alert(error);
+            return -1;
+        };
+
+        armyA[access.type][access.index].disengage();
+    }
+
     return {
         getArmy,
         resetArmyA,
@@ -159,6 +250,10 @@ const armyAmodule = (function () {
         getUnitIndexById,
         woundUnit,
         killUnit,
+        route,
+        unroute,
+        engageUnit,
+        disengageUnit,
     }
 })();
 
@@ -169,9 +264,9 @@ armyAmodule.addUnit("Gaetan", "Archers d'élite", "mis", 1, 6, 14, 2, 6, 3, 5, 0
 console.log(armyAmodule.getArmy());
 
 document.getElementById('wound').addEventListener('click', () => {
-    armyAmodule.woundUnit("cav-1");
-    armyAmodule.woundUnit("inf-0");
-    armyAmodule.woundUnit("mis-2");
+    armyAmodule.woundUnit("A.cav-1");
+    armyAmodule.woundUnit("A.inf-0");
+    armyAmodule.woundUnit("A.mis-2");
 
     console.log(armyAmodule.getArmy());
 })

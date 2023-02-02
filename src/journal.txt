@@ -1,12 +1,16 @@
-unitFac : 
-    - add diTarget to returned object;
-    - add meTarget to returned object;
-
 create : 
-    - resetArmyA;
-    - woundUnit;
-    - killUnit;
+    - unitFac : isEngaged property, engage and disengage methods;
+    - armyAmodule.route;
+    - armyAmodule.unroute;
+    - armyAmodule.engageUnit;
+    - armyAmodule.disengageUnit;
 
-Modify unitFac : changed ID property to inID to avoid potential future conflicts;
-Modify addUnit : use a simpler syntax to assign unit to the right category (remove switch statement);
-Modify getUnitIndexById : use a simpler syntax to access the category of the unit type (remove switch statement);
+addUnit :
+    - add army identifier in front of new units ID to prevent future
+    potential conflicts;
+
+getUnitIndexById : 
+    - modify to aknowledge new units IDs;
+    - added condition to return -1 when ID type is empty;
+    - fix a bug where the function would return immediately after
+    not finding the good unit for one time;
