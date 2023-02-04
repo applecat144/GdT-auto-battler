@@ -1,9 +1,22 @@
-armyAmodule : 
-    - renamed armyModule ;
-    - swapped any reference to "armyA" to generic "army";
-    - Now takes a letter as parameter to help for identification of unit appartenance
-    (see addUnit's ID part);
-    - refactor armyModule to make it generic, and copied into any variable to 
-    easily create and store any number of army;
-    - create two identical armies that will be used as testing grounds to build
-    the battle module;
+unitFac :
+    - Add missileTarget method. missileTarget sets diTarget with a provided argument ;
+    - Add meleeTarget method. meleeTarget sets meTarget with a provided argument ;
+    - Deleted useless bonus categories ; 
+
+armyModule : 
+    - add success log to all subfunctions ;
+    - add missileTarget(target, targetID) : calls missileTarget for ID with targetID as argument ;
+    - remove artillery category (army.[art]);
+    - create getUnit : return a unit object from an ID ;
+
+Create toBattle() :
+    - add setMissilesTarget(), that randomly draws a target for each missile unit in each army ;
+    - add missileVolley(), that makes missiles of each army to shoot in turn at their designated target
+
+Create attackRoll() :
+    - determine if an attacker hits its targets by rolling a dice10 added to attackers attack value, and compare it 
+    to the target's De ;
+
+Create firstToUpper() :
+    - A simple function to get the first letter of a string to upper case, aimed at fixing case issues when applying
+    bonuses vs types ;
