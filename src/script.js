@@ -45,8 +45,6 @@ const unitFac = function (owner, name, type, inID, me, di, de, mv, mo, en, co, c
         deVsCav,
         deVsInf,
         deVsMis,
-        meTarget: null,
-        diTarget: null,
         isEngaged: null,
         isFleeing: 0,
         wound: function () {
@@ -107,7 +105,7 @@ const armyModule = function (letter) {
     }
 
     const resetArmy = function () {
-        ID = 0;
+        IDnum = 0;
 
         army.mis = [];
         army.cav = [];
@@ -297,42 +295,7 @@ const armyModule = function (letter) {
         console.log(`engageUnit : ${ID} disengaged from melee`);
     }
 
-    const missileTarget = function (ID, targetID) {
-        let access = getUnitIndexById(ID);
 
-        if (access === -1) {
-            let error = `ERR missileTarget : ${ID} not found`;
-            console.log(error);
-            alert(error);
-            return -1;
-        };
-
-        /* if (access[access.type][access.index].di === null) {
-            let error = `ERR missileTarget : ${ID} have no missile attack`;
-            console.log(error);
-            alert(error);
-            return -1;
-        } */
-
-        army[access.type][access.index].missileTarget(targetID);
-
-        console.log(`missileTarget : ${ID} targets ${targetID} at range`);
-    }
-
-    const meleeTarget = function (ID, targetID) {
-        let access = getUnitIndexById(ID);
-
-        if (access === -1) {
-            let error = `ERR missileTarget : ${ID} not found`;
-            console.log(error);
-            alert(error);
-            return -1;
-        };
-
-        army[access.type][access.index].meleeTarget(targetID);
-
-        console.log(`meleeTarget : ${ID} targets ${targetID} for melee`);
-    }
 
     return {
         getArmy,
@@ -349,8 +312,6 @@ const armyModule = function (letter) {
         unroute,
         engageUnit,
         disengageUnit,
-        missileTarget,
-        meleeTarget,
     }
 };
 
@@ -360,13 +321,13 @@ let armyB = (armyModule)(`B`);
 armyA.addUnit('Gaetan', 'Conscrits', 'inf', 2, null, 4, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 armyA.addUnit('Gaetan', 'Lanciers', 'inf', 4, null, 8, 2, 4, 2, 3, 0, 2, 0, 0, 0, 0, 0, 0, -2, 0);
 armyA.addUnit('Gaetan', 'Cavalerie lourde', 'cav', 4, -2, 10, 4, 2, 2, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-armyA.addUnit('Gaetan', 'Archers d\'élite', 'mis', 1, 6, 8, 3, 6, 3, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0);
+armyA.addUnit('Gaetan', 'Archers d\'élite', 'mis', 1, 6, 8, 3, 6, 3, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0);
 
 
 armyB.addUnit('Gérard', 'Conscrits', 'inf', 2, null, 4, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 armyB.addUnit('Gérard', 'Lanciers', 'inf', 4, null, 8, 2, 4, 2, 3, 0, 2, 0, 0, 0, 0, 0, 0, -2, 0);
 armyB.addUnit('Gérard', 'Cavalerie lourde', 'cav', 4, -2, 10, 4, 2, 2, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-armyB.addUnit('Gérard', 'Archers d\'élite', 'mis', 1, 6, 8, 3, 6, 3, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0);
+armyB.addUnit('Gérard', 'Archers d\'élite', 'mis', 1, 6, 8, 3, 6, 3, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0);
 
 function attackRoll(atkID, atk, defID, def) {
     let roll = dice10();
@@ -506,6 +467,173 @@ function toBattle() {
     missileVolley();
 }
 
-toBattle();
-console.log(armyA.getArmy());
-console.log(armyB.getArmy());
+let typeSwitch = [`mis`, `cav`, `inf`];
+
+function rangePhase() {
+
+    let typeSwitch = [`mis`, `cav`, `inf`];
+
+    let aMissiles = [];
+
+    let a = armyA.getArmy();
+
+    for (let key in a) {
+
+        if (key === `armyID`) {
+            continue;
+        }
+
+        a[key].forEach((unit) => {
+            if (!unit.isEngaged && (unit.di || unit.di === 0)) {
+                aMissiles.push(unit);
+            }
+        })
+
+    }
+
+    let bMissiles = [];
+
+    let b = armyB.getArmy();
+
+    for (let key in b) {
+
+        if (key === `armyID`) {
+            continue;
+        }
+
+        b[key].forEach((unit) => {
+            if (!unit.isEngaged && (unit.di || unit.di === 0)) {
+                bMissiles.push(unit)
+            }
+        })
+    }
+
+    let i = 0;
+
+    do {
+        /* if (!b[`mis`] && !b[`cav`] && !b[`inf`]) {
+
+            let error = `ERR rangePhase : army B is no more`;
+            console.log(error);
+            alert(error);
+            return -1
+
+        }
+
+        let list;
+
+        do {
+            let switchRoll = getRandomInt(0, 2);
+            list = b[typeSwitch[switchRoll]];
+        } while (!list[0]);
+
+        let shooter = aMissiles[i];
+
+        let target = shooter.diTarget = list[getRandomInt(0, (list.length - 1))];
+
+        console.log(`${shooter.inID} targets ${target.inID} for range attack`);
+
+        let diBonus = `diVs` + firstToUpper(target.type);
+
+        if (shooter[diBonus]) {
+            shooter.di += shooter[diBonus];
+            console.log(`rangePhase : apply ${shooter[diBonus]} bonys to ${shooter.inID}'s Di`);
+        } else {
+            console.log(`rangePhase : no Di bonus to apply against this type`);
+        }
+
+        if (target.deVsMis) {
+            target.de += target.deVsMis;
+            console.log(`rangePhase : apply ${target.deVsMis} bonus to ${target.inID}'s De`);
+        } else {
+            console.log(`rangePhase : no bonus De against range attacks`)
+        }
+
+        let result = attackRoll(shooter.inID, shooter.di, target.inID, target.de);
+
+        switch (result) {
+            case 'miss':
+                console.log(`rangePhase : ${shooter.inID} shoots at ${target.inID} and miss !`);
+                break;
+
+            case 'hit':
+                console.log(`rangePhase : ${shooter.inID} shoots at ${target.inID} and hit !`);
+                armyB.woundUnit(target.inID);
+                break;
+
+            case 'crit':
+                console.log(`rangePhase : ${shooter.inID} shoots at ${target.inID} and crits !`);
+                armyB.woundUnit(target.inID);
+                armyB.route(target.inID);
+                break;
+        }
+ */
+        missileVolley(i, aMissiles, b, armyB);
+        missileVolley(i, bMissiles, a, armyA);
+
+        i++;
+    } while (aMissiles[i] || bMissiles[i])
+
+}
+
+rangePhase();
+
+function missileVolley(i, missileList, armyList, armyModuleCallback) {
+
+    if (!armyList[`mis`] && !armyList[`cav`] && !armyList[`inf`]) {
+
+        let error = `ERR rangePhase : army B is no more`;
+        console.log(error);
+        alert(error);
+        return -1
+
+    }
+
+    let list;
+
+    do {
+        let switchRoll = getRandomInt(0, 2);
+        list = armyList[typeSwitch[switchRoll]];
+    } while (!list[0]);
+
+    let shooter = missileList[i];
+
+    let target = shooter.diTarget = list[getRandomInt(0, (list.length - 1))];
+
+    console.log(`${shooter.inID} targets ${target.inID} for range attack`);
+
+    let diBonus = `diVs` + firstToUpper(target.type);
+
+    if (shooter[diBonus]) {
+        shooter.di += shooter[diBonus];
+        console.log(`rangePhase : apply ${shooter[diBonus]} bonys to ${shooter.inID}'s Di`);
+    } else {
+        console.log(`rangePhase : no Di bonus to apply against this type`);
+    }
+
+    if (target.deVsMis) {
+        target.de += target.deVsMis;
+        console.log(`rangePhase : apply ${target.deVsMis} bonus to ${target.inID}'s De`);
+    } else {
+        console.log(`rangePhase : no bonus De against range attacks`)
+    }
+
+    let result = attackRoll(shooter.inID, shooter.di, target.inID, target.de);
+
+    switch (result) {
+        case 'miss':
+            console.log(`rangePhase : ${shooter.inID} shoots at ${target.inID} and miss !`);
+            break;
+
+        case 'hit':
+            console.log(`rangePhase : ${shooter.inID} shoots at ${target.inID} and hit !`);
+            armyModuleCallback.woundUnit(target.inID);
+            break;
+
+        case 'crit':
+            console.log(`rangePhase : ${shooter.inID} shoots at ${target.inID} and crits !`);
+            armyModuleCallback.woundUnit(target.inID);
+            armyModuleCallback.route(target.inID);
+            break;
+    }
+} 
