@@ -1,5 +1,4 @@
-import { CleanPlugin } from 'webpack';
-import './style.css';
+
 
 const firstToUpper = function (str) {
     let arr = str.split("");
@@ -98,10 +97,10 @@ const armyModule = function (letter) {
         return army;
     }
 
-    /* const getAlive = function () {
+    const getAlive = function () {
         let aliveMis = army.mis.filter(unit => unit.isDead === 0);
-        let aliveCav = army.cav.filter(unit => unit.isDEad === 0);
-        let aliveInf = army.inf.filter(unit => unit.isDEad === 0);
+        let aliveCav = army.cav.filter(unit => unit.isDead === 0);
+        let aliveInf = army.inf.filter(unit => unit.isDead === 0);
 
         let newArmy = {
             armyID: army.armyID,
@@ -111,7 +110,7 @@ const armyModule = function (letter) {
         }
 
         return newArmy;
-    } */
+    }
 
     const getMis = function () {
         return army[`mis`];
@@ -338,7 +337,7 @@ const armyModule = function (letter) {
 
     return {
         getArmy,
-        /* getAlive, */
+        getAlive,
         getMis,
         getCav,
         getInf,
@@ -681,5 +680,7 @@ function movementPhase(...armies) {
 
 movementPhase(armyA, armyB);
 
-/* console.log(armyA.getAlive());
-console.log(armyB.getAlive()); */
+console.log(armyA.getAlive());
+console.log(armyB.getAlive());
+console.log(armyA.getArmy());
+console.log(armyB.getArmy());

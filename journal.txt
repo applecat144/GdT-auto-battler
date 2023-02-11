@@ -1,0 +1,20 @@
+attackRoll :
+    - added a condition to handle auto hit on 10 and auto miss on 1;
+
+unitFac :
+    - added a usedMissiles property and methods to set it to 1 and 0;
+
+armyModule :
+    - create a function to set a unit's usedMissiles to 1;
+    - create a function to reset army's missiles ;
+
+rangePhase :
+    - added a condition to handle wether cavalry choses to shot or to move;
+
+Create movementPhase ()
+    - engage() set two units that engage each other in melee;
+    - breakEnage() separates two units engaged in melee;
+
+/// ! \\\ after major malfunctionning it seems that webpack isn't working 
+and commits since February 5th have been lost. Removing any webpack-related 
+thing since they were not useful (yet) so I can keep working on the project
